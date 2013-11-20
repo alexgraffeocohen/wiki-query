@@ -5,6 +5,7 @@ require 'httparty'
 
 base_url = 'http://en.wikipedia.org/w/api.php?action=query&prop=info&inprop=url&titles=Barack%20obama&redirects&format=json'
 i = 0
+no_page_iterator = 0
 
 # PROGRAM
 
@@ -20,6 +21,26 @@ CSV.foreach('test.csv') { |csv|
 	time_interval = end_time - start_time
 	puts "Time Interval:\t#{time_interval}\n"
 	api_call_pages = api_call["query"]["pages"]
+
+	# IF THERE ARE NO PAGES
+
+	if api_call_pages.keys == ["-1"]
+		if no_page_iterator < 1
+			CSV.open('missing.csv', mode = "w") { |missing|
+				missing << row
+				no_page_iterator += 1
+			}
+			next
+		else
+			CSV.open('missing.csv', mode = "a+") { |missing|
+				missing << row
+			}
+			next
+		end
+	end
+
+	# IF NORMAL
+
 	row[10] = api_call_pages.values.first.values[0]
 	row[11] = api_call_pages.values.first.values[9]
 	row[12] = api_call_pages.values.first.values[2]
