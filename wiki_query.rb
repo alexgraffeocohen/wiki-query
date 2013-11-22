@@ -1,6 +1,4 @@
-require 'csv'
 require 'httparty'
-require 'uri' 
 
 # VARIABLES
 
