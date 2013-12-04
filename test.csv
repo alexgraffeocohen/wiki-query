@@ -1,4 +1,4 @@
-Concept,Type,Relation,Link,Link Type,concept_id,concept_type_id,relation_id,link_id,link_type_id,Wikipedia Id,Wikipedia URL,Wikipedia Title,Wikidata ID,Freebase ID
+Concept,Type,Relation,Link,Link Type,Concept ID,Concept Type ID,Relation ID,Link ID,Link Type ID,Wikipedia ID,Wikipedia URL,Wikipedia Title,Wikidata ID,Freebase ID,Freebase MID
 Aramaic Language,nytd_des,sameAs,Aramaic_language,wikipedia_raw_name,150,1,11,71125,1,,,,,
 "Arbitration, Conciliation and Mediation",nytd_des,sameAs,Arbitration,wikipedia_raw_name,151,1,11,71126,1,,,,,
 Archery,nytd_des,sameAs,sdkfjhsdfkhg,wikipedia_raw_name,153,1,11,71128,1,,,,,

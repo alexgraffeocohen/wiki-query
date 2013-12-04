@@ -13,9 +13,9 @@ If none of these conditions are true, then the row is logged to normal.csv. Set 
 
 ## Requirements
 
-The CSV file used as input must be formatted in exactly the same way as the provided test.csv. In other words, it must include the same header as test.csv and elements must be ordered exactly as they are in test.csv. Otherwise, the script will not query the Wikipedia API (or the Freebase API) for the correct entry.
+The CSV file used as input must be formatted in exactly the same way as the provided test.csv. In other words, it must include the same header as test.csv and elements must be ordered exactly as they are in test.csv. Otherwise, the script will not query the Wikipedia API (or the Freebase API) for the correct entry and the output files will not be generated properly.
 
-Ruby 1.9.3 is required, since  
+Ruby 1.9.3 is required, since that's what the httparty gem requires.
 
 ## To Run
 

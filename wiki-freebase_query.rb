@@ -7,39 +7,65 @@ require 'httparty'
 
 base_wiki_url = 'http://en.wikipedia.org/w/api.php?action=query&prop=info&inprop=url&titles=wiki-title&redirects&format=json'
 base_freebase_url = 'https://www.googleapis.com/freebase/v1/mqlread?query={"mid":null,"id":null,"key":{"namespace":"/wikipedia/en_id","value":"wiki-id","limit":1}}'
-loop_count = 0              # counts how many rows have been examined
-no_page_count = 0           # counts how many rows are missing wiki pages
-multi_page_count = 0        # counts how many rows have multiple wiki pages
-missing_freebase_count = 0  # counts how many rows are missing freebase entries
-clean_count = 0             # counts how many rows have no issues
+loop_count = 0                   # counts how many rows have been examined
+no_page_count = 0                # counts how many rows are missing wiki pages
+multi_page_count = 0             # counts how many rows have multiple wiki pages
+missing_freebase_count = 0       # counts how many rows are missing freebase entries
+clean_count = 0                  # counts how many rows have no issues
+
+$wiki_missing_iterator = 0       # iterators prevent headers from being written to CSV output files more than once
+$wiki_multiple_iterator = 0
+$freebase_missing_iterator = 0
+normal_iterator = 0
 
 # The script will add the below array as a header row to missing_wiki.csv, multiple_wiki.csv, and missing_freebcase.csv.
-$header = ["Concept","Type","Relation","Link","Link Type","concept_id","concept_type_id","relation_id","link_id","link_type_id","Wikipedia Id","Wikipedia URL","Wikipedia Title","Wikidata ID","Freebase ID"]
+$header = ["Concept","Type","Relation","Link","Link Type","Concept ID","Concept Type ID","Relation ID","Link ID","Link Type ID","Wikipedia ID","Wikipedia URL","Wikipedia Title","Wikidata ID","Freebase ID","Freebcase MID"]
 
 OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE    # necessary to force freebase query
 
 # METHODS
 
 def wiki_missing_pages       # writes rows that return no wiki entries to missing.csv
-	CSV.open('missing_wiki.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |missing_wiki|
-		missing_wiki << $row
-	}
+	if $wiki_missing_iterator == 0
+		CSV.open('missing_wiki.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |missing_wiki|
+			missing_wiki << $row
+		}
+		$wiki_missing_iterator += 1
+	else
+		CSV.open('missing_wiki.csv', mode = "a+", options = { headers: $header }) { |missing_wiki|
+			missing_wiki << $row
+		}
+	end
 	puts "No entry found! Logged to missing_wiki.csv."
 	rest
 end
 
 def wiki_multiple_pages      # writes rows that return multiple wiki entries to multiple.csv
-	CSV.open('multiple_wiki.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |multiple_wiki|
-		multiple_wiki << $row
-	}
+	if $wiki_multiple_iterator == 0
+		CSV.open('multiple_wiki.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |multiple_wiki|
+			multiple_wiki << $row
+		}
+		$wiki_missing_iterator += 1
+	else
+		CSV.open('multiple_wiki.csv', mode = "a+", options = { headers: $header }) { |multiple_wiki|
+			multiple_wiki << $row
+		}
+	end	
 	puts "Multiple entries found! Logged to multiple_wiki.csv."
 	rest
 end
 
 def freebase_missing_pages   # writes rows that return no freebase entries to missing_freebase.csv
-	CSV.open('missing_freebase.csv', mode = "a+", options = { headers: $header, write_headers: true }) {|missing_freebase|
-		missing_freebase << $row
-	}
+	if $freebase_missing_iterator == 0
+		CSV.open('missing_freebase.csv', mode = "a+", options = { headers: $header, write_headers: true }) {|missing_freebase|
+			missing_freebase << $row
+		}
+		$freebase_missing_iterator += 1
+	else
+		CSV.open('missing_freebase.csv', mode = "a+", options = { headers: $header }) {|missing_freebase|
+			missing_freebase << $row
+		}
+	end	
 	puts "Missing freebase entry! Logged to missing_freebase.csv"
 	rest
 end
@@ -98,9 +124,16 @@ CSV.foreach('test.csv', options = { headers: true }) { |csv|      # replace 'tes
 
 	# WRITE OUT TO NORMAL.CSV
 
-	CSV.open('normal.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |file|
+	if normal_iterator == 0
+		CSV.open('normal.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |file|
 			file << $row
 		}
+		normal_iterator += 1
+	else
+		CSV.open('normal.csv', mode = "a+", options = { headers: $header }) { |file|
+			file << $row
+		}
+	end
 	loop_count += 1
 	clean_count += 1
 	rest
