@@ -16,7 +16,7 @@ clean_count = 0                  # counts how many rows have no issues
 $wiki_missing_iterator = 0       # iterators prevent headers from being written to CSV output files more than once
 $wiki_multiple_iterator = 0
 $freebase_missing_iterator = 0
-normal_iterator = 0
+$normal_iterator = 0
 
 # The script will add the below array as a header row to missing_wiki.csv, multiple_wiki.csv, and missing_freebcase.csv.
 $header = ["Concept","Type","Relation","Link","Link Type","Concept ID","Concept Type ID","Relation ID","Link ID","Link Type ID","Wikipedia ID","Wikipedia URL","Wikipedia Title","Wikidata ID","Freebase ID","Freebcase MID"]
@@ -25,7 +25,7 @@ OpenSSL::SSL::VERIFY_PEER = OpenSSL::SSL::VERIFY_NONE    # necessary to force fr
 
 # METHODS
 
-def wiki_missing_pages       # writes rows that return no wiki entries to missing.csv
+def log_missing_wiki       # writes rows that return no wiki entries to missing.csv
 	if $wiki_missing_iterator == 0
 		CSV.open('missing_wiki.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |missing_wiki|
 			missing_wiki << $row
@@ -40,7 +40,7 @@ def wiki_missing_pages       # writes rows that return no wiki entries to missin
 	rest
 end
 
-def wiki_multiple_pages      # writes rows that return multiple wiki entries to multiple.csv
+def log_multiple_wiki      # writes rows that return multiple wiki entries to multiple.csv
 	if $wiki_multiple_iterator == 0
 		CSV.open('multiple_wiki.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |multiple_wiki|
 			multiple_wiki << $row
@@ -55,7 +55,7 @@ def wiki_multiple_pages      # writes rows that return multiple wiki entries to 
 	rest
 end
 
-def freebase_missing_pages   # writes rows that return no freebase entries to missing_freebase.csv
+def log_missing_freebase   # writes rows that return no freebase entries to missing_freebase.csv
 	if $freebase_missing_iterator == 0
 		CSV.open('missing_freebase.csv', mode = "a+", options = { headers: $header, write_headers: true }) {|missing_freebase|
 			missing_freebase << $row
@@ -70,7 +70,22 @@ def freebase_missing_pages   # writes rows that return no freebase entries to mi
 	rest
 end
 
-def rest            # inserts sleep interval
+def log_clean_rows           # writes rows that return all data to normal.csv
+	if $normal_iterator == 0
+		CSV.open('normal.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |file|
+			file << $row
+		}
+		$normal_iterator += 1
+	else
+		CSV.open('normal.csv', mode = "a+", options = { headers: $header }) { |file|
+			file << $row
+		}
+	end
+	puts "Logged to normal.csv."
+	rest
+end
+
+def rest                     # inserts sleep interval
 	puts "Sleeping..."
 	sleep 1
 	puts "-----------"
@@ -89,7 +104,7 @@ CSV.foreach('test.csv', options = { headers: true }) { |csv|      # replace 'tes
 	wiki_call_pages = wiki_call["query"]["pages"]
 
 	if wiki_call_pages.keys == ["-1"]   # execute if row does not return a wiki entry
-		wiki_missing_pages
+		log_missing_wiki
 		no_page_count += 1
 		loop_count += 1
 		next
@@ -97,7 +112,7 @@ CSV.foreach('test.csv', options = { headers: true }) { |csv|      # replace 'tes
 	
 
 	if wiki_call_pages.keys[1] != nil   # execute if row returns multiple wiki entries
-		wiki_multiple_pages
+		log_multiple_wiki
 		multi_page_count += 1
 		loop_count += 1
 		next
@@ -113,7 +128,7 @@ CSV.foreach('test.csv', options = { headers: true }) { |csv|      # replace 'tes
 	puts "Made Freebase query for Wiki ID##{$row[10]}..."
 
 	if freebase_call["result"] == nil   # execute if row does not return a freebase entry
-		freebase_missing_pages
+		log_missing_freebase
 		missing_freebase_count +=1
 		loop_count += 1
 		next
@@ -122,21 +137,11 @@ CSV.foreach('test.csv', options = { headers: true }) { |csv|      # replace 'tes
 	freebase_id = $row[14] = freebase_call["result"]["id"]
 	freebase_mid = $row[15] = freebase_call["result"]["mid"]
 
-	# WRITE OUT TO NORMAL.CSV
+	# IF ALL DATA FOUND, WRITE OUT TO NORMAL.CSV
 
-	if normal_iterator == 0
-		CSV.open('normal.csv', mode = "a+", options = { headers: $header, write_headers: true }) { |file|
-			file << $row
-		}
-		normal_iterator += 1
-	else
-		CSV.open('normal.csv', mode = "a+", options = { headers: $header }) { |file|
-			file << $row
-		}
-	end
+	log_clean_rows
 	loop_count += 1
 	clean_count += 1
-	rest
 }
 
 puts "Done! Completed #{loop_count} rows. #{clean_count} were clean. #{no_page_count} logged to missing.csv. #{multi_page_count} logged to multiple.csv. #{missing_freebase_count} logged to missing_freebase.csv."
