@@ -8,7 +8,7 @@ All functionality is defined in class methods within a Querier class:
 - self.log_missing_wiki: writes rows that return no wiki entries to missing_wiki.csv
 - self.log_multiple_wiki: writes rows that return multiple wiki entries to multiple_wiki.csv
 - self.log_missing_freebase: writes rows that return no freebase entries to missing_freebase.csv
-- self.log_clean_rows: writes rows that return all requested data to normal.csv
+- self.log_clean_rows: writes rows that return all requested data to clean.csv
 - self.rest: inserts sleep interval after API calls
 - self.make_query: uses above methods to make queries, fill in data, and log each row in the CSV file
 
@@ -22,9 +22,9 @@ Ruby 1.9.3 is required, since that's what the httparty gem requires.
 
 ## To Run
 
-Change the filename in Line 103 of self.make_query from 'test.csv' to the name of your input file. Make sure that the file is located in the same directory as the script. The script will execute self.rest after each API call, regardless of the status of the row. The script is designed so that rows are appended to normal.csv, missing_wiki.csv, multiple_wiki.csv, or missing_freebase.csv without overwriting any of the files should they already exist. Keep that in mind when running the script multiple times, since this behavior could result in log files that you don't expect.
+Change the filename in Line 103 of self.make_query from 'test.csv' to the name of your input file. Make sure that the file is located in the same directory as the script. The script will execute self.rest after each API call, regardless of the status of the row. The script is designed so that rows are appended to clean.csv, missing_wiki.csv, multiple_wiki.csv, or missing_freebase.csv without overwriting any of the files should they already exist. Keep that in mind when running the script multiple times, since this behavior could result in log files that you don't expect.
 
-## Walkthrough of self.make_query
+## Script Walkthrough
 	
 	CSV.foreach('input.csv', options = { headers: true }) do |csv|
 	
@@ -45,8 +45,6 @@ Change the filename in Line 103 of self.make_query from 'test.csv' to the name o
 	# executed if the API call does not return a wiki entry
 		Querier.log_missing_wiki
 		# method appends row to missing_wiki.csv
-		@@no_page_count += 1
-		@@loop_count += 1
 		next  # script goes to the next row in the input CSV file
 	end
 
@@ -54,8 +52,6 @@ Change the filename in Line 103 of self.make_query from 'test.csv' to the name o
 	# executed if API call returns multiple wiki entries
 		Querier.log_multiple_wiki  
 		# method appends row to multiple_wiki.csv
-		@@multi_page_count += 1
-		@@loop_count += 1
 		next 
 	end
 
@@ -73,21 +69,17 @@ Change the filename in Line 103 of self.make_query from 'test.csv' to the name o
 	# executed if API call does not return a freebase entry
 		Querier.log_missing_freebase
 		# method appends row to missing_freebase.csv
-		@@missing_freebase_count +=1
-		@@loop_count += 1
 		next 
 	end
 
 	freebase_id = @@row[14] = freebase_call["result"]["id"]
 	freebase_mid = @@row[15] = freebase_call["result"]["mid"]
 
-	# IFF ALL DATA FOUND, WRITE OUT TO NORMAL.CSV
+	# IFF ALL DATA FOUND, WRITE OUT TO clean.csv
 
 	Querier.log_clean_rows
-	# method appends row to normal.csv
-	@@loop_count += 1
-	@@clean_count += 1
-	
+	# method appends row to clean.csv
+		
 	end
 
 
