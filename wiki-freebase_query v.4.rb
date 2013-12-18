@@ -138,7 +138,7 @@ CSV.foreach('test.csv', options = { headers: true }) do |csv|      # replace 'te
 	wiki_title = @@row[12] = wiki_call_pages.values.first.values[2]
 
 	# FREEBASE API CALL
-	base_freebase_url = 'https://www.googleapis.com/freebase/v1/mqlread?query={"mid":null,"id":null,"key":{"namespace":"/wikipedia/en_id","value":"wiki-id","limit":1}}'
+	base_freebase_url = 'https://www.googleapis.com/freebase/v1/mqlread?query={"mid":null,"id":null,"key":{"namespace":"/wikipedia/en_id","value":"wiki-id","limit":1}}&key=AIzaSyD8p3wHSxpqOhDHsL87ekN2a2YYP5NxB34'
 	freebase_call = HTTParty.get(URI.encode(base_freebase_url.gsub(/wiki-id/, wiki_id.to_s)))
 	puts "Made Freebase query for Wiki ID##{@@row[10]}..."
 
